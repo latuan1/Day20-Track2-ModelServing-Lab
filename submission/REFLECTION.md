@@ -53,7 +53,7 @@ Q2_K nhanh hơn rõ (tok/s 55.7 vs 42.8, E2E thấp hơn), nhưng Q4_K_M giữ c
 | 10 | 0.42 | 19000 | 23000 | 23000 | 0 |
 | 50 | 0.37 | 27000 | 40000 | 43000 | 0 |
 
-**KV-cache observation** (từ `record-metrics.py`): peak `llamacpp:kv_cache_usage_ratio` ở concurrency 50 = _TBD_, nghĩa là …
+**KV-cache observation** (từ `record-metrics.py`): không có số liệu vì scrape thất bại (server chưa chạy với `--metrics` hoặc không chạy), nên không xác định được peak `llamacpp:kv_cache_usage_ratio`.
 
 ---
 
@@ -110,7 +110,7 @@ Mình bất ngờ vì tăng thread vượt core vật lý lại làm tốc độ
 - [x] `hardware.json` đã commit
 - [x] `models/active.json` đã commit (hoặc paste path snapshot vào section 1)
 - [x] `benchmarks/01-quickstart-results.md` đã commit
-- [ ] `benchmarks/02-server-results.md` (hoặc CSV từ `record-metrics.py`) đã commit
+- [x] `benchmarks/02-server-results.md` (hoặc CSV từ `record-metrics.py`) đã commit
 - [x] `benchmarks/bonus-*.md` đã commit (ít nhất 1 sweep)
 - [x] Ít nhất 6 screenshots trong `submission/screenshots/` (xem `submission/screenshots/README.md`)
 - [x] `make verify` exit 0 (chạy ngay trước khi push)
