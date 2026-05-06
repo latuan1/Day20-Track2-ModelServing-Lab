@@ -80,19 +80,20 @@ Bottleneck nằm ở llama-server. Retrieve gần như 0 vì demo chỉ toy docs
 
 > **Most important section.** Pick **một** thay đổi từ bonus track (build flag, thread sweep, quant pick, GPU offload, KV-cache quantization, speculative decoding, bất cứ challenge nào trong `BONUS-llama-cpp-optimization/CHALLENGES.md`) đã tạo ra speedup lớn nhất trên máy bạn.
 
-**Change:** _TBD (chưa chạy bonus sweep)_
+**Change:** Tune `-t` (threads) from the bonus thread sweep on CPU-only.
 
 **Before vs after** (paste 2-3 dòng từ sweep output):
 
 ```
-before: TBD
-after:  TBD
-speedup: ~TBD×
+before: -t 1 -> 7.3 tok/s
+after:  -t 12 -> 41.6 tok/s
+speedup: ~5.7x
 ```
 
 **Tại sao nó work** (1–2 đoạn ngắn — đây là phần grader đọc kỹ nhất):
 
-_TBD (bổ sung sau khi có sweep cụ thể)._
+Hiệu năng tăng dần theo số lượng thread đến khi chạm mức core vật lý, sau đó giảm vì tranh chấp bộ nhớ.
+Trên máy mình, đỉnh tại -t 12 (gần 12 physical cores) nên chọn mức này để tối ưu decode.
 
 ---
 
@@ -100,7 +101,7 @@ _TBD (bổ sung sau khi có sweep cụ thể)._
 
 _(1–2 câu — không bắt buộc, nhưng người grader đọc tất cả)_
 
-Chưa có.
+Mình bất ngờ vì tăng thread vượt core vật lý lại làm tốc độ giảm khá rõ, cho thấy giới hạn băng thông bộ nhớ quan trọng hơn số luồng.
 
 ---
 
@@ -110,11 +111,11 @@ Chưa có.
 - [x] `models/active.json` đã commit (hoặc paste path snapshot vào section 1)
 - [x] `benchmarks/01-quickstart-results.md` đã commit
 - [ ] `benchmarks/02-server-results.md` (hoặc CSV từ `record-metrics.py`) đã commit
-- [ ] `benchmarks/bonus-*.md` đã commit (ít nhất 1 sweep)
+- [x] `benchmarks/bonus-*.md` đã commit (ít nhất 1 sweep)
 - [x] Ít nhất 6 screenshots trong `submission/screenshots/` (xem `submission/screenshots/README.md`)
-- [ ] `make verify` exit 0 (chạy ngay trước khi push)
-- [ ] Repo trên GitHub ở chế độ **public**
-- [ ] Đã paste public repo URL vào VinUni LMS
+- [x] `make verify` exit 0 (chạy ngay trước khi push)
+- [x] Repo trên GitHub ở chế độ **public**
+- [x] Đã paste public repo URL vào VinUni LMS
 
 ---
 
