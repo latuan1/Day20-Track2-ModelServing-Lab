@@ -53,14 +53,23 @@ def detect_cpu() -> dict:
         except OSError:
             info["model"] = "unknown"
     elif sys_plat == "win32":
-        rc, out = run(["wmic", "cpu", "get", "Name,NumberOfCores", "/format:value"])
-        if rc == 0:
-            for line in out.splitlines():
-                if line.startswith("Name="):
-                    info["model"] = line.split("=", 1)[1].strip()
-                elif line.startswith("NumberOfCores="):
-                    val = line.split("=", 1)[1].strip()
-                    info["cores_physical"] = int(val) if val.isdigit() else None
+        rc, out = run([
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name"
+        ])
+        if rc == 0 and out.strip():
+            info["model"] = out.strip()
+
+        rc, out = run([
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "Get-CimInstance Win32_Processor | Select-Object -ExpandProperty NumberOfCores"
+        ])
+        val = out.strip()
+        info["cores_physical"] = int(val) if rc == 0 and val.isdigit() else None
     info.setdefault("model", "unknown")
     info.setdefault("cores_physical", info["cores_logical"])
     return info
@@ -80,12 +89,15 @@ def detect_ram_gb() -> float:
         except OSError:
             return 0.0
     if sys_plat == "win32":
-        rc, out = run(["wmic", "computersystem", "get", "TotalPhysicalMemory", "/format:value"])
-        for line in out.splitlines():
-            if line.startswith("TotalPhysicalMemory="):
-                val = line.split("=", 1)[1].strip()
-                if val.isdigit():
-                    return round(int(val) / 1024**3, 1)
+        rc, out = run([
+            "powershell",
+            "-NoProfile",
+            "-Command",
+            "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory"
+        ])
+        val = out.strip()
+        if rc == 0 and val.isdigit():
+            return round(int(val) / 1024**3, 1)
     return 0.0
 
 

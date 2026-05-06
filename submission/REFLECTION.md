@@ -4,9 +4,9 @@
 
 ---
 
-**Họ Tên:** _<Họ Tên>_
-**Cohort:** _<A20-K1 / A20-K2 / ...>_
-**Ngày submit:** _<YYYY-MM-DD>_
+**Họ Tên:** Lương Anh Tuấn
+**Cohort:** A20-K1
+**Ngày submit:** 2026-05-06
 
 ---
 
@@ -14,18 +14,18 @@
 
 > Paste output của `python 00-setup/detect-hardware.py` vào đây, hoặc điền thủ công:
 
-- **OS:** _<macOS 14 / Windows 11 / Ubuntu 24.04 / ...>_
-- **CPU:** _<Apple M2 / Intel i7-12700H / AMD Ryzen 7 5800H / ...>_
-- **Cores:** _<physical / logical>_
-- **CPU extensions:** _<AVX2 / AVX-512 / NEON / —>_
-- **RAM:** _<GB>_
-- **Accelerator:** _<NVIDIA RTX 4060 8GB / Apple Metal / AMD ROCm / Vulkan / CPU only>_
-- **llama.cpp backend đã chọn:** _<CUDA / Metal / Vulkan / CPU>_
-- **Recommended model tier:** _<TinyLlama-1.1B / Qwen2.5-1.5B / Llama-3.2-3B / Qwen2.5-7B>_
+- **OS:** Windows 11 (AMD64)
+- **CPU:** 12th Gen Intel(R) Core(TM) i5-12500H
+- **Cores:** 12 physical / 16 logical
+- **CPU extensions:** N/A (script không report)
+- **RAM:** 15.7 GB
+- **Accelerator:** CPU only (no discrete accelerator)
+- **llama.cpp backend đã chọn:** CPU
+- **Recommended model tier:** Qwen2.5-1.5B
 
 **Setup story** (≤ 80 chữ): những gì cần thay đổi để lab chạy được trên máy bạn (vd: dùng WSL2, install CUDA Toolkit, fall back sang Vulkan vì ROCm phiên bản kén, tắt antivirus để pip install nhanh hơn, v.v.):
 
-_Answer here._
+Windows 11, CPU-only. Dùng llama-cpp-python server mặc định, không CUDA/ROCm. Giữ `n_threads=12`, `n_gpu_layers=0` theo khuyến nghị để ổn định.
 
 ---
 
@@ -35,12 +35,12 @@ _Answer here._
 
 | Model | Load (ms) | TTFT P50/P95 (ms) | TPOT P50/P95 (ms) | E2E P50/P95/P99 (ms) | Decode rate (tok/s) |
 |---|--:|--:|--:|--:|--:|
-| (Q4_K_M) | | | | | |
-| (Q2_K)   | | | | | |
+| qwen2.5-1.5b-instruct-q4_k_m.gguf | 773 | 86 / 128 | 23.3 / 25.7 | 1540 / 1688 / 1707 | 42.8 |
+| qwen2.5-1.5b-instruct-q2_k.gguf   | 370 | 120 / 137 | 18.0 / 18.7 | 1246 / 1311 / 1320 | 55.7 |
 
 **Một quan sát** (≤ 50 chữ): Q4_K_M vs Q2_K trên máy bạn — số liệu nói gì? Quality đáng đánh đổi không?
 
-_Answer here._
+Q2_K nhanh hơn rõ (tok/s 55.7 vs 42.8, E2E thấp hơn), nhưng Q4_K_M giữ chất lượng tốt hơn. Với RAM 16GB, mình chấp nhận chậm hơn để đổi chất lượng.
 
 ---
 
@@ -50,31 +50,29 @@ _Answer here._
 
 | Concurrency | Total RPS | TTFB P50 (ms) | E2E P95 (ms) | E2E P99 (ms) | Failures |
 |--:|--:|--:|--:|--:|--:|
-| 10 | | | | | |
-| 50 | | | | | |
+| 10 | 0.42 | 19000 | 23000 | 23000 | 0 |
+| 50 | 0.37 | 27000 | 40000 | 43000 | 0 |
 
-**KV-cache observation** (từ `record-metrics.py`): peak `llamacpp:kv_cache_usage_ratio` ở concurrency 50 = _<0.XX>_, nghĩa là …
-
-_Answer here._
+**KV-cache observation** (từ `record-metrics.py`): peak `llamacpp:kv_cache_usage_ratio` ở concurrency 50 = _TBD_, nghĩa là …
 
 ---
 
 ## 4. Track 03 — Milestone integration
 
-- **N16 (Cloud/IaC):** _<piece you connected — k3d cluster / GCP project / docker-compose / "stub: localhost only">_
-- **N17 (Data pipeline):** _<piece — Airflow DAG / batch job / "stub: in-memory dict">_
-- **N18 (Lakehouse):** _<piece — Delta Lake table / Iceberg / "stub: SQLite">_
-- **N19 (Vector + Feature Store):** _<piece — Qdrant index / Feast / "stub: TOY_DOCS">_
+- **N16 (Cloud/IaC):** stub: localhost only
+- **N17 (Data pipeline):** stub: in-process Python (no batch)
+- **N18 (Lakehouse):** stub: none (in-memory only)
+- **N19 (Vector + Feature Store):** stub: TOY_DOCS + keyword overlap
 
 **Nơi tốn nhiều ms nhất** trong pipeline (đo bằng `time.perf_counter` trong `pipeline.py`):
 
-- embed: _<ms>_
-- retrieve: _<ms>_
-- llama-server: _<ms>_
+- embed: 0.0 (stub)
+- retrieve: 0.0
+- llama-server: 7778.0
 
 **Reflection** (≤ 60 chữ): bottleneck nằm ở đâu? Có khớp với kỳ vọng không?
 
-_Answer here._
+Bottleneck nằm ở llama-server. Retrieve gần như 0 vì demo chỉ toy docs, nên latency chủ yếu do LLM decode.
 
 ---
 
@@ -82,19 +80,19 @@ _Answer here._
 
 > **Most important section.** Pick **một** thay đổi từ bonus track (build flag, thread sweep, quant pick, GPU offload, KV-cache quantization, speculative decoding, bất cứ challenge nào trong `BONUS-llama-cpp-optimization/CHALLENGES.md`) đã tạo ra speedup lớn nhất trên máy bạn.
 
-**Change:** _<vd: rebuild llama.cpp với `-DGGML_NATIVE=ON -DGGML_BLAS=ON`; vd: hạ `-t` từ 12 xuống 6; vd: bật Metal trên M2>_
+**Change:** _TBD (chưa chạy bonus sweep)_
 
 **Before vs after** (paste 2-3 dòng từ sweep output):
 
 ```
-before: <số liệu>
-after:  <số liệu>
-speedup: ~<X.Y>×
+before: TBD
+after:  TBD
+speedup: ~TBD×
 ```
 
 **Tại sao nó work** (1–2 đoạn ngắn — đây là phần grader đọc kỹ nhất):
 
-_Giải thích như đang nói với một bạn cùng lớp đang ngồi cạnh. Tránh "vibes-based" reasoning — bám vào mô hình mental của hardware (memory bandwidth? compute? cache?). Nếu kết quả khác kỳ vọng từ deck, nói rõ — đó là phần grader thưởng điểm._
+_TBD (bổ sung sau khi có sweep cụ thể)._
 
 ---
 
@@ -102,18 +100,18 @@ _Giải thích như đang nói với một bạn cùng lớp đang ngồi cạnh
 
 _(1–2 câu — không bắt buộc, nhưng người grader đọc tất cả)_
 
-_Answer here._
+Chưa có.
 
 ---
 
 ## 7. Self-graded checklist
 
-- [ ] `hardware.json` đã commit
-- [ ] `models/active.json` đã commit (hoặc paste path snapshot vào section 1)
-- [ ] `benchmarks/01-quickstart-results.md` đã commit
+- [x] `hardware.json` đã commit
+- [x] `models/active.json` đã commit (hoặc paste path snapshot vào section 1)
+- [x] `benchmarks/01-quickstart-results.md` đã commit
 - [ ] `benchmarks/02-server-results.md` (hoặc CSV từ `record-metrics.py`) đã commit
 - [ ] `benchmarks/bonus-*.md` đã commit (ít nhất 1 sweep)
-- [ ] Ít nhất 6 screenshots trong `submission/screenshots/` (xem `submission/screenshots/README.md`)
+- [x] Ít nhất 6 screenshots trong `submission/screenshots/` (xem `submission/screenshots/README.md`)
 - [ ] `make verify` exit 0 (chạy ngay trước khi push)
 - [ ] Repo trên GitHub ở chế độ **public**
 - [ ] Đã paste public repo URL vào VinUni LMS
